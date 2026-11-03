@@ -4,7 +4,10 @@ set -euo pipefail
 project_root="$(cd "$(dirname "$0")/.." && pwd)"
 architecture="${1:-osx-arm64}"
 case "$architecture" in osx-arm64|osx-x64) ;; *) echo 'Use osx-arm64 or osx-x64.'; exit 1 ;; esac
-bundle="$project_root/dist/$architecture/JobTracker.app"
+output_directory="$project_root/dist/$architecture"
+package_stage="$(mktemp -d "${TMPDIR:-/tmp}/jobtracker.XXXXXX")"
+trap 'rm -rf -- "$package_stage"' EXIT
+bundle="$package_stage/JobTracker.app"
 mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
 dotnet publish "$project_root/src/JobTracker/JobTracker.csproj" -c Release -r "$architecture" --self-contained true -o "$bundle/Contents/MacOS" -p:PublishTrimmed=false
 cat > "$bundle/Contents/Info.plist" <<'PLIST'
@@ -27,4 +30,11 @@ chmod +x "$bundle/Contents/MacOS/JobTracker"
 # Finder can attach display metadata to a newly created .app; it cannot be signed with that attribute.
 xattr -dr com.apple.FinderInfo "$bundle" 2>/dev/null || true
 codesign --force --deep --sign - "$bundle"
-echo "App ready: $bundle"
+mkdir -p "$output_directory"
+# Only replace the generated app in this script's own architecture-specific output folder.
+rm -rf -- "$output_directory/JobTracker.app"
+ditto "$bundle" "$output_directory/JobTracker.app"
+# Preserve extended code-signing attributes on .NET assemblies in the distributable ZIP.
+ditto -c -k --sequesterRsrc --keepParent "$bundle" "$output_directory/JobTracker-$architecture.zip"
+echo "App ready: $output_directory/JobTracker.app"
+echo "ZIP ready: $output_directory/JobTracker-$architecture.zip"

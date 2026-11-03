@@ -75,7 +75,7 @@ From the project root:
 bash scripts/package-macos.sh osx-arm64
 ```
 
-Use `osx-x64` for Intel. The script creates `dist/osx-arm64/JobTracker.app` (or `dist/osx-x64/JobTracker.app`). Open it in Finder; you can copy it to Applications. It includes the .NET runtime, so the packaged app does not need a separately installed SDK.
+Use `osx-x64` for Intel. The script creates `dist/osx-arm64/JobTracker.app` (or `dist/osx-x64/JobTracker.app`). Open it in Finder; you can copy it to Applications. The script also creates a ZIP alongside the app, preserving its signing metadata. It includes the .NET runtime, so the packaged app does not need a separately installed SDK.
 
 The script uses a local ad-hoc signature. It does **not** provide an Apple Developer ID or notarization. Public distribution to other Macs requires appropriate signing/notarization; building locally from source is the simplest development workflow.
 
