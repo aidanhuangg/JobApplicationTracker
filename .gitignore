@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+applications.json
+practice-applications.json
+*.tmp
