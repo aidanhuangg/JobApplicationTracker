@@ -1,7 +1,19 @@
 using System.Text.Json;
 using JobTracker;
+using JobTracker.ViewModels;
+using JobTracker.Views;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Automation;
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Avalonia.Media.Imaging;
 
-// A tiny dependency-free test runner. A failing check gives a non-zero exit code.
+AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).WithInterFont().SetupWithoutStarting();
+
+// A tiny test runner; Avalonia.Headless exercises the actual window without a display. A failing check gives a non-zero exit code.
 int failed = 0;
 var date = new DateOnly(2026, 11, 3);
 Run("Missing file starts empty", path => Equal(0, Open(path).Applications.Count));
@@ -91,6 +103,195 @@ Run("A failed save leaves in-memory state unchanged", path =>
     Equal(1, tracker.Applications.Count);
     Equal(0, Directory.GetFiles(Path.GetDirectoryName(path)!, "*.tmp").Length);
 });
+Run("Full editor updates company, role, and dates atomically", path =>
+{
+    var tracker = Open(path);
+    tracker.Add("Old", "Old role", date);
+    tracker.UpdateDetails(1, "New", "New role", date.AddDays(1), ApplicationStatus.Offer, date.AddDays(2), "Accepted next steps");
+    var saved = Open(path).Applications.Single();
+    Equal("New", saved.Company);
+    Equal("New role", saved.Role);
+    Equal(date.AddDays(1), saved.AppliedOn);
+    var original = File.ReadAllText(path);
+    Throws<ArgumentException>(() => tracker.UpdateDetails(1, "New", "", date, ApplicationStatus.Applied, null, ""));
+    Equal(original, File.ReadAllText(path));
+});
+Run("New form validates required fields and interview chronology", path =>
+{
+    var vm = new MainViewModel(path, () => date);
+    vm.NewCommand.Execute(null);
+    vm.SaveCommand.Execute(null);
+    Equal(true, vm.Editor!.HasError);
+    Equal(0, vm.TotalCount);
+    vm.Editor.Company = "Acme";
+    vm.Editor.Role = "Developer";
+    vm.Editor.InterviewDate = date.AddDays(-1).ToDateTime(TimeOnly.MinValue);
+    vm.SaveCommand.Execute(null);
+    Equal(true, vm.IsEditorOpen);
+    vm.Editor.InterviewDate = date.ToDateTime(TimeOnly.MinValue);
+    vm.Editor.Status = ApplicationStatus.Interviewing;
+    vm.SaveCommand.Execute(null);
+    Equal(false, vm.IsEditorOpen);
+    Equal(1, vm.InterviewCount);
+    Equal(1, Open(path).Applications.Count);
+});
+Run("Search and status filters combine and keep details in sync", path =>
+{
+    var tracker = Open(path);
+    tracker.Add("Acme", "Developer", date);
+    tracker.Add("Acme", "Designer", date, status: ApplicationStatus.Offer);
+    tracker.Add("Other", "Engineer", date);
+    var vm = new MainViewModel(path, () => date) { Search = "ACME", Filter = "Offer" };
+    Equal(1, vm.Applications.Count);
+    Equal("Designer", vm.Selected!.Role);
+    vm.Search = "missing";
+    Equal(true, vm.IsEmpty);
+    Equal(false, vm.HasSelection);
+    vm.ClearFiltersCommand.Execute(null);
+    Equal(3, vm.Applications.Count);
+    Equal(1, vm.OfferCount);
+});
+Run("Upcoming excludes past and closed interviews, sorts soonest first", path =>
+{
+    var tracker = Open(path);
+    var applied = date.AddDays(-10);
+    tracker.Add("Later", "Role", applied, status: ApplicationStatus.Interviewing, interviewOn: date.AddDays(4));
+    tracker.Add("Today", "Role", applied, interviewOn: date);
+    tracker.Add("Past", "Role", applied, interviewOn: date.AddDays(-1));
+    tracker.Add("Closed", "Role", applied, status: ApplicationStatus.Rejected, interviewOn: date.AddDays(1));
+    var vm = new MainViewModel(path, () => date);
+    vm.UpcomingCommand.Execute(null);
+    Equal(2, vm.Applications.Count);
+    Equal("Today", vm.Applications.First().Company);
+});
+Run("Cancel protects dirty forms; discard does not save", path =>
+{
+    var vm = new MainViewModel(path, () => date);
+    vm.NewCommand.Execute(null);
+    vm.CancelCommand.Execute(null);
+    Equal(false, vm.IsEditorOpen);
+    vm.NewCommand.Execute(null);
+    vm.Editor!.Company = "Unsaved";
+    vm.CancelCommand.Execute(null);
+    Equal(true, vm.DiscardPrompt);
+    vm.KeepEditingCommand.Execute(null);
+    Equal(true, vm.IsEditorOpen);
+    Equal(false, vm.DiscardPrompt);
+    vm.DiscardCommand.Execute(null);
+    Equal(false, vm.IsEditorOpen);
+    Equal(false, File.Exists(path));
+});
+Run("Saved edits reset filters so the application remains visible", path =>
+{
+    Open(path).Add("Company", "Role", date);
+    var vm = new MainViewModel(path, () => date) { Filter = "Applied" };
+    vm.EditCommand.Execute(null);
+    vm.Editor!.Status = ApplicationStatus.Offer;
+    vm.Editor.Company = "Renamed";
+    vm.SaveCommand.Execute(null);
+    Equal("Renamed", vm.Selected!.Company);
+    Equal("Offer", vm.Selected.Status);
+    Equal("All statuses", vm.Filter);
+    Equal(1, vm.OfferCount);
+});
+Run("Load errors disable editing and preserve the corrupt file", path =>
+{
+    File.WriteAllText(path, "null");
+    var vm = new MainViewModel(path, () => date);
+    Equal(true, vm.HasLoadError);
+    Equal(false, vm.NewCommand.CanExecute(null));
+    Equal("null", File.ReadAllText(path));
+});
+Run("Failed saves retain the form and previous summary", path =>
+{
+    var vm = new MainViewModel(path, () => date);
+    vm.NewCommand.Execute(null);
+    vm.Editor!.Company = "Company";
+    vm.Editor.Role = "Role";
+    Directory.CreateDirectory(path);
+    vm.SaveCommand.Execute(null);
+    Equal(true, vm.IsEditorOpen);
+    Equal(true, vm.Editor.HasError);
+    Equal("Company", vm.Editor.Company);
+    Equal(0, vm.TotalCount);
+});
+Run("Actual XAML window binds search, form input, save, and results", path =>
+{
+    var vm = new MainViewModel(path, () => date);
+    var window = new MainWindow { DataContext = vm };
+    window.Show();
+    try
+    {
+        var add = window.GetVisualDescendants().OfType<Button>().First(b => b.Command == vm.NewCommand);
+        add.Focus();
+        window.KeyPressQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        window.KeyReleaseQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        Equal(true, vm.IsEditorOpen);
+        var company = window.GetVisualDescendants().OfType<TextBox>().Single(b => AutomationProperties.GetName(b) == "Company");
+        var role = window.GetVisualDescendants().OfType<TextBox>().Single(b => AutomationProperties.GetName(b) == "Job title");
+        company.Text = "UI Company";
+        role.Text = "UI Developer";
+        Dispatcher.UIThread.RunJobs();
+        Equal("UI Company", vm.Editor!.Company);
+        var save = window.GetVisualDescendants().OfType<Button>().Single(b => b.Command == vm.SaveCommand);
+        save.Focus();
+        window.KeyPressQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        window.KeyReleaseQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        Equal(false, vm.IsEditorOpen);
+        Equal(1, vm.TotalCount);
+        var list = window.FindControl<ListBox>("ApplicationList")!;
+        Equal(1, list.ItemCount);
+        window.FindControl<TextBox>("SearchBox")!.Text = "no match";
+        Dispatcher.UIThread.RunJobs();
+        Equal(0, list.ItemCount);
+        Equal(true, vm.IsEmpty);
+    }
+    finally { vm.DiscardCommand.Execute(null); window.Close(); }
+});
+Run("Demo mode uses a separate file and contains the full status range", path =>
+{
+    DemoData.Create(path);
+    var vm = new MainViewModel(path, demo: true);
+    Equal(true, vm.IsDemo);
+    Equal(6, vm.TotalCount);
+    Equal(2, vm.InterviewCount);
+    Equal(1, vm.OfferCount);
+    vm.UpcomingCommand.Execute(null);
+    Equal(2, vm.Applications.Count);
+});
+if (args is ["--screenshots", var output])
+{
+    Run("Render dashboard and editor previews from actual XAML", path =>
+    {
+        Directory.CreateDirectory(output);
+        DemoData.Create(path);
+        var vm = new MainViewModel(path, demo: true);
+        vm.Selected = vm.Applications.Single(a => a.Company == "Linear");
+        var window = new MainWindow { DataContext = vm, Width = 1440, Height = 900 };
+        window.Show();
+        try
+        {
+            Capture("dashboard.png");
+            vm.EditCommand.Execute(null);
+            Capture("editor.png");
+            vm.DiscardCommand.Execute(null);
+            window.Width = 1120;
+            window.Height = 740;
+            Capture("compact.png");
+        }
+        finally { vm.DiscardCommand.Execute(null); window.Close(); }
+        void Capture(string name)
+        {
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            using var image = new RenderTargetBitmap(new PixelSize((int)window.Width, (int)window.Height));
+            image.Render(window);
+            image.Save(Path.Combine(output, name), PngBitmapEncoderOptions.Default);
+        }
+    });
+}
 Console.WriteLine($"\n{(failed == 0 ? "All checks passed." : $"{failed} check(s) failed.")}");
 return failed == 0 ? 0 : 1;
 

@@ -7,3 +7,6 @@
 applications.json
 practice-applications.json
 *.tmp
+**/dist/
+*.lock
+.DS_Store

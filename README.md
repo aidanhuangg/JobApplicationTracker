@@ -1,115 +1,164 @@
-# Job Application Tracker
+# JobTracker
 
-A small, beginner-friendly **C# / .NET console application** for keeping track of your job search. No database, accounts, web server, or third-party packages are needed.
+**A calmer place for your next chapter.** A C# / .NET desktop app built with Avalonia, XAML, and MVVM. Track your job applications, interviews, offers, and next steps in a clean, personal workspace on macOS, Windows, or Linux.
 
-## What you can do
+![JobTracker dashboard with illustrative demo applications](docs/images/dashboard.png)
 
-- Add a company, role, application date, and notes.
-- List applications and see counts by status.
-- Update status: Applied, Interviewing, Offer, Rejected, or Withdrawn.
-- Record or clear an interview date and edit notes.
-- Search company names or roles without worrying about capitalization.
-- View upcoming interviews for active applications, sorted by date.
-- Automatically save changes to a local JSON file and reload them next time.
+## What's inside
 
-## Windows setup and run
+- A clean application list with company initials and color-coded status badges.
+- Summary cards for total applications, active applications, interviews, and offers.
+- Instant company/role search and a status filter that work together.
+- An adjacent details panel with full names, interview dates, and notes.
+- Simple add/edit forms with calendar pickers and helpful validation.
+- Upcoming interviews sorted by date, and a separate offers view.
+- Unsaved-change protection, keyboard shortcuts, and visible save feedback.
+- Local JSON storage, safe file replacement, and compatibility with the original console app's data.
+- An isolated demo mode so you can explore without touching your real applications.
 
-1. Install the **.NET 10 SDK** from [Microsoft](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Choose the SDK rather than just the runtime. .NET 10 is an [LTS release](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core).
-2. Extract this project ZIP. Open the `JobApplicationTracker` folder in File Explorer, right-click inside it, and select **Open in Terminal**.
-3. Check the SDK, then run the app:
+The screenshot uses fictional demo records; your workspace starts empty. This is an independent personal project, not affiliated with the companies mentioned in its demo.
 
-```powershell
-dotnet --version
+## Run on your Mac
+
+1. Install the **[.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)**. For Apple Silicon (M1/M2/M3/M4 and later), choose Arm64; for an Intel Mac, choose x64.
+2. Download/extract this repository, or clone it. Open the `JobApplicationTracker` folder in VS Code with Microsoft's **C# Dev Kit** extension.
+3. In **Terminal → New Terminal**, run:
+
+```bash
 dotnet run --project src/JobTracker
 ```
 
-The version should start with `10.` (or use a newer SDK that supports .NET 10). Use the menu numbers and press Enter. Choose `0` to quit. You can also open `JobApplicationTracker.sln` in a .NET 10-compatible Visual Studio installation with the **.NET desktop development** workload, set `JobTracker` as the startup project, and press Ctrl+F5.
+A desktop window opens. You only need the terminal to launch from source; all tracking happens in the graphical interface. The first run downloads Avalonia's packages from NuGet and needs internet access. Later use of the app is local and does not require a network connection.
 
-This console app also runs on macOS and Linux with the .NET 10 SDK using the same commands.
+To open a temporary workspace filled with sample applications:
 
-## Try it in two minutes
-
-1. Choose `2` to add an application. Enter `Example Software`, `Developer Co-op`, an application date such as `2026-11-03`, and a short note.
-2. Choose `1` to list it and find its ID.
-3. Choose `3`, enter the ID, choose `2` for Interviewing, and enter an interview date on or after the application date.
-4. Choose `5` to see full details, or `6` to list interviews happening today or later. Past interview dates stay in the record but do not appear in the upcoming list.
-5. Quit and reopen the app. Your application will still be there.
-
-Dates use `YYYY-MM-DD`. When updating, Enter keeps the existing value; `-` clears the interview date or notes. The upcoming list excludes Offer, Rejected, and Withdrawn applications. Status is updated manually; entering an interview date does not automatically change it.
-
-Example list (illustrative):
-
-```text
-ID    COMPANY                ROLE                         STATUS        APPLIED    INTERVIEW
-----------------------------------------------------------------------------------------------------
-1     Example Software       Developer Co-op              Interviewing  2026-11-03 2026-11-10
+```bash
+dotnet run --project src/JobTracker -- --demo
 ```
 
-## Where your data goes
+## Run on Windows
 
-On Windows the default is `%LOCALAPPDATA%\JobTracker\applications.json`. The app prints the full location when it starts. The file is created when you first add an application; restarting from a different folder still uses the same default file.
+Install the .NET 10 SDK, open the extracted project folder in Terminal, and use the same `dotnet run --project src/JobTracker` command. Or open `JobApplicationTracker.sln` in a .NET 10-compatible Visual Studio installation, set **JobTracker** as the startup project, and run it. VS Code with C# Dev Kit also works.
 
-To use another file, including a separate practice file:
+On Linux, use the same command with the .NET 10 SDK and Avalonia's [Linux desktop prerequisites](https://docs.avaloniaui.net/docs/get-started/install-avalonia).
+
+## A quick walkthrough
+
+1. Click **Add application**. Enter a company, job title, and application date. Add a status, optional interview date, and notes.
+2. Click **Add application** in the form. The record appears in your list and is saved immediately.
+3. Select any application to read its details. Click **Edit application** to change any field, then **Save changes**.
+4. Search company names or roles, or choose a status in the dropdown.
+5. Click **Interviews** for active applications with an interview today or later. Click **Offers** to focus on offers.
+
+The applied date defaults to today. Choose dates with the calendar icon; **Clear** removes an optional interview date. An interview cannot be earlier than the application date. Status is set manually. Editing a record returns you to all applications so the updated record stays visible even when its status changed.
+
+Canceling a changed form asks whether to discard changes. Closing the window while editing also opens this prompt; discard the form, then close the window again if you want to exit.
+
+### Keyboard shortcuts
+
+| Action | macOS | Windows / Linux |
+|---|---|---|
+| New application | Cmd+N | Ctrl+N |
+| Search | Cmd+F | Ctrl+F |
+| Save open form | Cmd+S | Ctrl+S |
+| Cancel open form | Esc | Esc |
+
+Tab moves between controls. The modal form keeps the underlying workspace disabled while editing. Company and role are required. Full company names and roles remain available in the details panel when a list row truncates them.
+
+## Build an app you can open directly
+
+### macOS
+
+From the project root:
+
+```bash
+bash scripts/package-macos.sh osx-arm64
+```
+
+Use `osx-x64` for Intel. The script creates `dist/osx-arm64/JobTracker.app` (or `dist/osx-x64/JobTracker.app`). Open it in Finder; you can copy it to Applications. It includes the .NET runtime, so the packaged app does not need a separately installed SDK.
+
+The script uses a local ad-hoc signature. It does **not** provide an Apple Developer ID or notarization. Public distribution to other Macs requires appropriate signing/notarization; building locally from source is the simplest development workflow.
+
+### Windows
 
 ```powershell
+dotnet publish src/JobTracker -c Release -r win-x64 --self-contained true -o dist/windows
+```
+
+Open `dist/windows/JobTracker.exe`. Keep all files in that folder together. Use `win-arm64` for Windows on ARM. Public distribution may require code signing.
+
+## Your data
+
+The app uses the same filename and JSON format as the previous console version. Existing records load automatically on the same machine:
+
+| Platform | Default location |
+|---|---|
+| Windows | `%LOCALAPPDATA%\JobTracker\applications.json` |
+| macOS | `~/Library/Application Support/JobTracker/applications.json` |
+| Linux | Your .NET LocalApplicationData directory, typically `~/.local/share/JobTracker/applications.json` |
+
+Hover over the bottom-left saved-locally label to see the actual path. To use another file:
+
+```bash
 dotnet run --project src/JobTracker -- --data ./practice-applications.json
 ```
 
-Changes are written to a temporary file in the same folder and then moved over the previous file. Failed saves do not change the in-memory list. Invalid or unreadable existing data produces an error and is not silently replaced. To recover from malformed data, close the app, copy the file for safekeeping, then fix the JSON or move it aside to start fresh. Back up the file periodically. Data is plain text, stored locally, and has no encryption or cloud sync.
+Data is plain-text JSON, stays on your device, and is not encrypted or synced. Back up the file periodically. Saves first write beside the target and then replace it; a failed save keeps the old in-memory records and the filled-in form. Invalid existing data produces an error and disables editing instead of overwriting the file. Close the app, back up and repair the file, then reopen.
 
-Run **one instance per data file**. Simultaneous instances are not supported and can overwrite each other's changes. There is no deletion feature; the app focuses on a small set of easy-to-understand operations.
+A workspace lock prevents two desktop instances from editing the same file. The `.lock` file can remain on disk after closing; only the open file handle owns the lock. Demo mode uses a separate temporary file and removes it on normal exit. It never seeds or changes your real applications.
 
-## How the code fits together
+## Beginner-friendly architecture
 
 ```text
-JobApplicationTracker.sln
-src/JobTracker/
-  Program.cs              Console menus, input parsing, and display
-  JobApplication.cs       Application record and status enum
-  ApplicationTracker.cs  Adding, updating, searching, and validation
-  ApplicationStore.cs    Loading and safely replacing the JSON file
-tests/JobTracker.Tests/
-  Program.cs              Dependency-free automated checks
+src/
+  JobTracker.Core/
+    JobApplication.cs          Data record and status enum
+    ApplicationTracker.cs      Adding, updating, validation, and searching
+    ApplicationStore.cs        JSON loading and safe file replacement
+  JobTracker/
+    App.axaml                  Shared theme, colors, and control styles
+    App.axaml.cs               Startup, workspace path, and instance lock
+    Program.cs                 Avalonia entry point
+    DemoData.cs                Sample records for the isolated demo
+    Views/
+      MainWindow.axaml         Layout, templates, and compiled data bindings
+      MainWindow.axaml.cs      Window events and keyboard/focus behavior
+    ViewModels/
+      MainViewModel.cs         Filtering, selection, summary, and commands
+      ApplicationEditor.cs     Form state and validation
+      ApplicationRow.cs        Display text and status colors
+      ObservableObject.cs      Property notifications and commands
+tests/JobTracker.Tests/         Core, view-model, and headless UI checks
+scripts/package-macos.sh        Self-contained macOS app packaging
 ```
 
-Start reading `JobApplication.cs`, then `ApplicationTracker.cs`, then `Program.cs`. The application record holds data. The tracker enforces rules and asks the store to save it. The console handles interaction. Separating these responsibilities lets you test the logic without typing into the menu.
+**MVVM in this app:** the model is your saved application data; the view is the XAML window; view models expose the values and commands the screen needs. Data binding keeps the screen in sync when those values change. The code behind handles keyboard and focus behavior, while business rules and file operations stay out of the view.
 
-Useful C# concepts demonstrated:
+Start with `JobApplication.cs`, then `ApplicationTracker.cs`, `ApplicationEditor.cs`, and `MainViewModel.cs`. Read `MainWindow.axaml` last to see how its bindings connect everything.
 
-- **Records and enums** describe an application and its allowed statuses.
-- **Collections and LINQ** handle listing, filtering, ordering, and summary counts.
-- **Methods and classes** separate display, application rules, and file storage.
-- **Exceptions and validation** handle bad input and file errors.
-- **System.Text.Json** saves and reloads structured data.
+## Build and test
 
-This version uses a simple console interface. A future desktop UI could reuse the application and storage classes.
-
-## Build and checks
-
-Run from the project root:
-
-```powershell
+```bash
 dotnet build JobApplicationTracker.sln --configuration Release
-dotnet run --project tests/JobTracker.Tests --configuration Release
+dotnet run --project tests/JobTracker.Tests --configuration Release --no-build
 ```
 
-The test project is a small executable with no test-framework dependencies. Use `dotnet run` above, rather than `dotnet test`. It prints PASS/FAIL for each case and returns a nonzero exit code on failure. Tests use isolated temporary files and remove them afterward; they never use your real application file.
+The test executable prints PASS/FAIL and returns a nonzero code on failure. Run it with `dotnet run`, rather than `dotnet test`. It uses isolated temporary files, never your real application data. It needs no display: Avalonia.Headless loads the actual XAML and exercises form input, commands, and result bindings.
 
-Checks cover adding and reloading records, ID assignment, required fields, updating and clearing fields, invalid statuses and dates, searches, malformed data, duplicate IDs, and failed-save behavior. A GitHub Actions workflow runs the build and checks on Windows.
+Checks cover persistence, validation, full-field updates, searches and combined filters, interview ordering, counters, cancel/discard behavior, saving under a filter, corrupt files, failed saves, demo isolation, and the actual window's add/save/search flow. GitHub Actions builds and runs checks on Windows, macOS, and Linux.
 
-Validated during delivery: Release build with zero warnings, all 10 automated checks, and a console walkthrough covering add, list, update, search, details, upcoming interviews, restart, and invalid input. These checks ran on macOS with .NET 10; Windows execution was not available locally.
+To regenerate the screenshots from the actual Avalonia controls:
 
-`NuGet.Config` clears package sources because this project needs no external packages. If you later add a package, restore the NuGet.org package source first.
-
-## Ideas to try next
-
-Add a status filter, export to CSV, track multiple interview rounds, or add a confirmed delete action. Start with one feature at a time and add a check for its behavior.
+```bash
+dotnet run --project tests/JobTracker.Tests -c Release -- --screenshots docs/images
+```
 
 ## Troubleshooting
 
-- **`dotnet` is not recognized:** install the SDK and reopen Terminal.
-- **SDK does not support .NET 10:** install the .NET 10 SDK, then check `dotnet --list-sdks`.
-- **Cannot open/save data:** check the printed file path and folder permissions; try `--data` with a writable folder.
-- **No upcoming interviews:** ensure the interview date is today or later and the application's status is Applied or Interviewing.
+- **`dotnet` not found:** install the SDK and reopen VS Code / Terminal.
+- **SDK too old:** verify `dotnet --version` starts with `10.` or use a newer SDK supporting .NET 10.
+- **Package download fails:** check your connection to NuGet, then run `dotnet restore`.
+- **Workspace cannot open:** close other instances and check folder permissions. The app shows the failing path.
+- **No upcoming interviews:** ensure the date is today or later and status is Applied or Interviewing.
 
-This is an independent learning project, with no connection to any employer.
+Built with [.NET](https://dotnet.microsoft.com/) and [Avalonia](https://avaloniaui.net/). This app currently tracks one interview date per application, has no deletion feature, and does not submit applications or connect to job websites.

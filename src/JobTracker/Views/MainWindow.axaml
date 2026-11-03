@@ -1,0 +1,161 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:JobTracker.ViewModels" x:Class="JobTracker.Views.MainWindow"
+        x:DataType="vm:MainViewModel" Title="JobTracker · Your next chapter"
+        Width="1440" Height="900" MinWidth="1120" MinHeight="740" Background="#F6F8F5"
+        WindowStartupLocation="CenterScreen">
+  <Grid>
+    <Grid ColumnDefinitions="190,*" IsEnabled="{Binding !IsEditorOpen}">
+      <!-- A small navigation rail keeps the main workspace uncluttered. -->
+      <Border Background="#193329" Padding="18,28,18,24">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+          <StackPanel Spacing="12" Margin="10,0,0,36">
+            <Border Width="38" Height="38" Background="#C6E7D4" CornerRadius="11" HorizontalAlignment="Left">
+              <TextBlock Text="j." Foreground="#193329" FontSize="27" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-3,0,0" />
+            </Border>
+            <TextBlock Text="JobTracker" Foreground="White" FontSize="21" FontWeight="SemiBold" LetterSpacing="-0.6" />
+            <TextBlock Text="Make room for what's next." Foreground="#A1B6AB" FontSize="10" />
+          </StackPanel>
+          <StackPanel Grid.Row="1" Spacing="7">
+            <TextBlock Text="YOUR WORKSPACE" Foreground="#809E8E" FontSize="9" LetterSpacing="1.6" Margin="15,0,0,12" />
+            <Button Classes="nav" Classes.active="{Binding IsAllView}" Command="{Binding AllCommand}" Content="▦   Applications" />
+            <Button Classes="nav" Classes.active="{Binding IsUpcomingView}" Command="{Binding UpcomingCommand}" Content="◷   Interviews" />
+            <Button Classes="nav" Classes.active="{Binding IsOffersView}" Command="{Binding OffersCommand}" Content="☆   Offers" />
+          </StackPanel>
+          <StackPanel Grid.Row="3" Spacing="20">
+            <Border Background="#233E32" CornerRadius="10" Padding="15">
+              <StackPanel Spacing="9">
+                <TextBlock Text="One step at a time." Foreground="#E0EDE5" FontWeight="Medium" FontSize="12" />
+                <TextBlock Text="Keep showing up. The right opportunity is worth the journey." TextWrapping="Wrap" Foreground="#A1B6AB" FontSize="11" LineHeight="18" />
+              </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="6,0">
+              <Border Width="30" Height="30" Background="#3A5447" CornerRadius="15"><TextBlock Text="Y" Foreground="#D9E6DE" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <StackPanel Spacing="2"><TextBlock Text="Your workspace" FontSize="11" Foreground="#DFEBE3" /><TextBlock Text="Local &amp; personal" FontSize="10" Foreground="#8DA698" /></StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="32,30,32,20">
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,26">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding WorkspaceLabel}" Classes="label" Foreground="#508B75" FontSize="10" />
+            <TextBlock Text="{Binding PageTitle}" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.9" />
+            <TextBlock Text="{Binding PageSubtitle}" Classes="muted" FontSize="12" />
+          </StackPanel>
+          <Button Grid.Column="1" Classes="primary" Command="{Binding NewCommand}" VerticalAlignment="Center" Content="＋  Add application" AutomationProperties.Name="Add application" />
+        </Grid>
+        <Grid Grid.Row="1" ColumnDefinitions="*,16,*,16,*,16,*" Margin="0,0,0,24">
+          <Border Classes="card" Padding="19,17"><StackPanel Spacing="9"><TextBlock Text="TOTAL APPLICATIONS" Classes="label" FontSize="9" /><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding TotalCount}" FontSize="30" FontWeight="SemiBold" /><TextBlock Grid.Column="1" Text="↗" Foreground="#9DB6A7" FontSize="26" /></Grid><TextBlock Text="Every opportunity, in one place" Classes="muted" FontSize="10" /></StackPanel></Border>
+          <Border Grid.Column="2" Classes="card" Padding="19,17"><StackPanel Spacing="9"><TextBlock Text="IN PROGRESS" Classes="label" FontSize="9" /><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding ActiveCount}" FontSize="30" FontWeight="SemiBold" /><TextBlock Grid.Column="1" Text="◌" Foreground="#6E94C7" FontSize="26" /></Grid><TextBlock Text="Applied or interviewing" Classes="muted" FontSize="10" /></StackPanel></Border>
+          <Border Grid.Column="4" Classes="card" Padding="19,17"><StackPanel Spacing="9"><TextBlock Text="INTERVIEWING" Classes="label" FontSize="9" /><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding InterviewCount}" FontSize="30" FontWeight="SemiBold" /><TextBlock Grid.Column="1" Text="◷" Foreground="#9C87C8" FontSize="26" /></Grid><TextBlock Text="Conversations moving forward" Classes="muted" FontSize="10" /></StackPanel></Border>
+          <Border Grid.Column="6" Classes="card" Padding="19,17" Background="#EAF3E9" BorderBrush="#D8E7D7"><StackPanel Spacing="9"><TextBlock Text="OFFERS RECEIVED" Classes="label" FontSize="9" Foreground="#547951" /><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding OfferCount}" FontSize="30" FontWeight="SemiBold" Foreground="#2C653E" /><TextBlock Grid.Column="1" Text="☆" Foreground="#69A077" FontSize="26" /></Grid><TextBlock Text="Something to feel good about" Foreground="#6F8A6D" FontSize="10" /></StackPanel></Border>
+        </Grid>
+        <StackPanel Grid.Row="2" Spacing="10" Margin="0,0,0,12">
+          <Border IsVisible="{Binding HasLoadError}" Background="#FCECEA" BorderBrush="#EAC3BD" BorderThickness="1" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="8"><TextBlock Text="{Binding LoadError}" TextWrapping="Wrap" Foreground="#A63D35" /><TextBlock Text="{Binding DataPath}" FontSize="11" TextWrapping="Wrap" /></StackPanel>
+          </Border>
+          <Border IsVisible="{Binding HasNotification}" Background="#E4F2E9" CornerRadius="8" Padding="12,4">
+            <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Notification}" Foreground="#28764D" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Dismiss" Classes="quiet" Command="{Binding DismissCommand}" Padding="8" /></Grid>
+          </Border>
+        </StackPanel>
+        <Grid Grid.Row="3" ColumnDefinitions="*,20,292">
+          <Border Classes="card" Padding="18">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,17"><StackPanel Orientation="Horizontal" Spacing="10"><TextBlock Text="Application list" FontSize="15" FontWeight="SemiBold" /><Border Background="#F0F3EF" CornerRadius="5" Padding="7,3"><TextBlock Text="{Binding ResultCount}" FontSize="10" Classes="muted" /></Border></StackPanel><TextBlock Grid.Column="1" Text="Select a row for details" Classes="muted" FontSize="10" VerticalAlignment="Center" /></Grid>
+              <Grid Grid.Row="1" ColumnDefinitions="*,12,160" Margin="0,0,0,18">
+                <TextBox x:Name="SearchBox" Text="{Binding Search, Mode=TwoWay}" PlaceholderText="Search company or role…" AutomationProperties.Name="Search applications" />
+                <ComboBox Grid.Column="2" ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding Filter, Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Filter by status" FontSize="11" />
+              </Grid>
+              <Grid Grid.Row="2" ColumnDefinitions="*,112,92" Margin="14,0,14,10"><TextBlock Text="COMPANY / ROLE" Classes="label" FontSize="9" /><TextBlock Grid.Column="1" Text="STATUS" Classes="label" FontSize="9" /><TextBlock Grid.Column="2" Text="APPLIED" Classes="label" FontSize="9" /></Grid>
+              <Grid Grid.Row="3">
+                <ListBox x:Name="ApplicationList" ItemsSource="{Binding Applications}" SelectedItem="{Binding Selected, Mode=TwoWay}" Background="Transparent" BorderThickness="0" Padding="0" AutomationProperties.Name="Applications">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ApplicationRow">
+                      <Grid ColumnDefinitions="*,112,92">
+                        <Grid ColumnDefinitions="40,*" Margin="0,0,8,0">
+                          <Border Width="32" Height="34" CornerRadius="8" Background="{Binding AvatarBackground}" HorizontalAlignment="Left"><TextBlock Text="{Binding Initial}" Foreground="{Binding AvatarForeground}" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                          <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center"><TextBlock Text="{Binding Company}" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" /><TextBlock Text="{Binding Role}" Classes="muted" FontSize="10" TextTrimming="CharacterEllipsis" /></StackPanel>
+                        </Grid>
+                        <Border Grid.Column="1" Background="{Binding BadgeBackground}" CornerRadius="5" Padding="8,5" VerticalAlignment="Center" HorizontalAlignment="Left"><TextBlock Text="{Binding Status}" Foreground="{Binding BadgeForeground}" FontSize="10" FontWeight="Medium" /></Border>
+                        <TextBlock Grid.Column="2" Text="{Binding AppliedDate}" FontSize="10" Foreground="#7A8581" VerticalAlignment="Center" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <StackPanel IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15" Margin="10,24">
+                  <Border Background="#EAF3EB" Width="60" Height="60" CornerRadius="18" HorizontalAlignment="Center"><TextBlock Text="↗" FontSize="32" Foreground="#538B65" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                  <TextBlock Text="{Binding EmptyTitle}" FontSize="19" FontWeight="SemiBold" TextAlignment="Center" />
+                  <TextBlock Text="{Binding EmptyMessage}" Classes="muted" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" LineHeight="21" />
+                  <Button Content="Add your first application" Classes="primary" IsVisible="{Binding !HasApplications}" Command="{Binding NewCommand}" HorizontalAlignment="Center" />
+                  <Button Content="Clear filters" Classes="secondary" IsVisible="{Binding HasApplications}" Command="{Binding ClearFiltersCommand}" HorizontalAlignment="Center" />
+                </StackPanel>
+              </Grid>
+            </Grid>
+          </Border>
+          <Border Grid.Column="2" Classes="card" Padding="22">
+            <Grid RowDefinitions="Auto,*,Auto">
+              <TextBlock Text="APPLICATION DETAILS" Classes="label" FontSize="9" Margin="0,0,0,22" />
+              <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                <Grid>
+                  <ContentControl Content="{Binding Selected}" HorizontalContentAlignment="Stretch">
+                    <ContentControl.ContentTemplate>
+                      <DataTemplate x:DataType="vm:ApplicationRow">
+                        <StackPanel Spacing="17">
+                          <Border Background="{Binding AvatarBackground}" Width="50" Height="50" CornerRadius="13" HorizontalAlignment="Left"><TextBlock Text="{Binding Initial}" FontSize="23" FontWeight="SemiBold" Foreground="{Binding AvatarForeground}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                          <StackPanel Spacing="7"><TextBlock Text="{Binding Company}" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" LetterSpacing="-0.6" /><TextBlock Text="{Binding Role}" Classes="muted" FontSize="12" TextWrapping="Wrap" LineHeight="19" /></StackPanel>
+                          <Border Background="{Binding BadgeBackground}" CornerRadius="5" Padding="9,6" HorizontalAlignment="Left"><TextBlock Text="{Binding Status}" Foreground="{Binding BadgeForeground}" FontSize="11" FontWeight="Medium" /></Border>
+                          <Border Height="1" Background="#EBEFEB" Margin="0,3" />
+                          <StackPanel Spacing="7"><TextBlock Text="APPLIED ON" Classes="label" FontSize="9" /><TextBlock Text="{Binding AppliedDate}" FontSize="12" /></StackPanel>
+                          <Border Background="#F3F6EF" CornerRadius="8" Padding="13"><StackPanel Spacing="8"><TextBlock Text="{Binding InterviewHint}" FontSize="9" Foreground="#739069" FontWeight="SemiBold" /><TextBlock Text="{Binding InterviewDate}" FontSize="13" Foreground="#42653F" FontWeight="Medium" /></StackPanel></Border>
+                          <StackPanel Spacing="10" Margin="0,3"><TextBlock Text="NOTES &amp; NEXT STEPS" Classes="label" FontSize="9" /><TextBlock Text="{Binding Notes}" TextWrapping="Wrap" FontSize="12" Foreground="#6C7972" LineHeight="21" /></StackPanel>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                  </ContentControl>
+                  <StackPanel IsVisible="{Binding !HasSelection}" Spacing="12" Margin="0,35"><TextBlock Text="A clearer view of your next step." FontSize="19" FontWeight="Medium" TextWrapping="Wrap" LineHeight="29" /><TextBlock Text="Select an application to see its status, interview date, and notes here." Classes="muted" FontSize="12" TextWrapping="Wrap" LineHeight="21" /></StackPanel>
+                </Grid>
+              </ScrollViewer>
+              <Button Grid.Row="2" Content="Edit application" Command="{Binding EditCommand}" Classes="secondary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,18,0,0" IsVisible="{Binding HasSelection}" />
+            </Grid>
+          </Border>
+        </Grid>
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,16,0,0"><TextBlock Text="{Binding FooterLabel}" Foreground="#8A968F" FontSize="10" ToolTip.Tip="{Binding DataPath}" /><TextBlock Grid.Column="1" Text="Small steps. New possibilities." Foreground="#8A968F" FontSize="10" /></Grid>
+      </Grid>
+    </Grid>
+    <!-- Blocking dialog: no accidental navigation away from a partially completed form. -->
+    <Border IsVisible="{Binding IsEditorOpen}" Background="#800F251D" Padding="24" KeyboardNavigation.TabNavigation="Cycle">
+      <Border Width="560" MaxHeight="810" Background="#FAFCF9" CornerRadius="16" BoxShadow="0 16 64 0 #30000000" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30">
+        <Grid RowDefinitions="*,Auto,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ContentControl Content="{Binding Editor}" HorizontalContentAlignment="Stretch">
+              <ContentControl.ContentTemplate>
+                <DataTemplate x:DataType="vm:ApplicationEditor">
+                  <StackPanel Spacing="18">
+                    <StackPanel Spacing="9" Margin="0,0,0,5"><TextBlock Text="{Binding Title}" FontSize="25" FontWeight="SemiBold" LetterSpacing="-0.7" /><TextBlock Text="{Binding Subtitle}" Classes="muted" FontSize="12" /></StackPanel>
+                    <StackPanel><TextBlock Text="Company *" Classes="fieldLabel" /><TextBox x:Name="CompanyInput" Text="{Binding Company, Mode=TwoWay}" PlaceholderText="e.g. Example Software" MaxLength="160" AutomationProperties.Name="Company" /></StackPanel>
+                    <StackPanel><TextBlock Text="Job title *" Classes="fieldLabel" /><TextBox Text="{Binding Role, Mode=TwoWay}" PlaceholderText="e.g. Software Developer Co-op" MaxLength="200" AutomationProperties.Name="Job title" /></StackPanel>
+                    <Grid ColumnDefinitions="*,18,*">
+                      <StackPanel><TextBlock Text="Application date *" Classes="fieldLabel" /><CalendarDatePicker SelectedDate="{Binding AppliedDate, Mode=TwoWay}" AutomationProperties.Name="Application date" /></StackPanel>
+                      <StackPanel Grid.Column="2"><TextBlock Text="Status" Classes="fieldLabel" /><ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding Status, Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Application status" /></StackPanel>
+                    </Grid>
+                    <StackPanel Spacing="7"><TextBlock Text="Interview date (optional)" Classes="fieldLabel" Margin="0" /><Grid ColumnDefinitions="*,Auto"><CalendarDatePicker SelectedDate="{Binding InterviewDate, Mode=TwoWay}" AutomationProperties.Name="Interview date" /><Button Grid.Column="1" Content="Clear" Classes="quiet" Command="{Binding ClearInterviewCommand}" Margin="8,0,0,0" /></Grid><TextBlock Text="Choose a date from the calendar. Leave blank if not scheduled." Classes="muted" FontSize="10" /></StackPanel>
+                    <StackPanel><TextBlock Text="Notes &amp; next steps" Classes="fieldLabel" /><TextBox Text="{Binding Notes, Mode=TwoWay}" PlaceholderText="A contact, something to prepare, or a reminder to follow up…" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" MaxHeight="180" MaxLength="10000" AutomationProperties.Name="Notes" /></StackPanel>
+                    <Border IsVisible="{Binding HasError}" Background="#FBE9E6" CornerRadius="7" Padding="12"><TextBlock Text="{Binding Error}" TextWrapping="Wrap" Foreground="#AC4439" FontSize="12" /></Border>
+                  </StackPanel>
+                </DataTemplate>
+              </ContentControl.ContentTemplate>
+            </ContentControl>
+          </ScrollViewer>
+          <Border Grid.Row="1" IsVisible="{Binding DiscardPrompt}" Background="#FFF0D6" CornerRadius="8" Padding="12" Margin="0,18,0,0">
+            <StackPanel Spacing="10"><TextBlock Text="Discard your unsaved changes?" FontWeight="SemiBold" /><StackPanel Orientation="Horizontal" Spacing="10"><Button Content="Keep editing" Command="{Binding KeepEditingCommand}" Classes="secondary" /><Button Content="Discard changes" Command="{Binding DiscardCommand}" Classes="quiet" /></StackPanel></StackPanel>
+          </Border>
+          <Grid Grid.Row="2" ColumnDefinitions="*,Auto,12,Auto" Margin="0,24,0,0">
+            <TextBlock Text="* Required fields" Classes="muted" FontSize="10" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Cancel" Command="{Binding CancelCommand}" Classes="quiet" />
+            <Button Grid.Column="3" Content="{Binding Editor.SaveLabel}" Command="{Binding SaveCommand}" Classes="primary" />
+          </Grid>
+        </Grid>
+      </Border>
+    </Border>
+  </Grid>
+</Window>

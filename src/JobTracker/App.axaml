@@ -1,0 +1,35 @@
+<Application xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="JobTracker.App" Name="JobTracker" RequestedThemeVariant="Light">
+  <Application.Resources>
+    <Color x:Key="SystemAccentColor">#238675</Color>
+    <SolidColorBrush x:Key="SystemControlHighlightAccentBrush">#238675</SolidColorBrush>
+    <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush">#EAF4F1</SolidColorBrush>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="avares://Avalonia.Fonts.Inter/Assets#Inter" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="#24332F" />
+    </Style>
+    <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="#7A8581" /></Style>
+    <Style Selector="TextBlock.label"><Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="#7A8581" /><Setter Property="LetterSpacing" Value="1.3" /></Style>
+    <Style Selector="TextBlock.fieldLabel"><Setter Property="FontWeight" Value="Medium" /><Setter Property="Margin" Value="0,0,0,7" /></Style>
+    <Style Selector="Button"><Setter Property="Cursor" Value="Hand" /><Setter Property="CornerRadius" Value="8" /><Setter Property="Padding" Value="16,11" /><Setter Property="FontWeight" Value="Medium" /></Style>
+    <Style Selector="Button.primary"><Setter Property="Background" Value="#238675" /><Setter Property="Foreground" Value="White" /><Setter Property="BorderThickness" Value="0" /></Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="#196D60" /><Setter Property="Foreground" Value="White" /></Style>
+    <Style Selector="Button.secondary"><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="#DFE6E2" /><Setter Property="BorderThickness" Value="1" /></Style>
+    <Style Selector="Button.quiet"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="#64736D" /><Setter Property="BorderThickness" Value="0" /></Style>
+    <Style Selector="Button.nav"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Left" /><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="#A7BAB3" /><Setter Property="Padding" Value="15,13" /><Setter Property="BorderThickness" Value="0" /></Style>
+    <Style Selector="Button.nav:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="#263E35" /><Setter Property="Foreground" Value="White" /></Style>
+    <Style Selector="Button.nav.active"><Setter Property="Background" Value="#2C493E" /><Setter Property="Foreground" Value="#F0FAF5" /></Style>
+    <Style Selector="TextBox"><Setter Property="CornerRadius" Value="8" /><Setter Property="Padding" Value="12,11" /><Setter Property="BorderBrush" Value="#DEE5E1" /><Setter Property="Background" Value="White" /></Style>
+    <Style Selector="ComboBox"><Setter Property="CornerRadius" Value="8" /><Setter Property="MinHeight" Value="42" /><Setter Property="Padding" Value="12,8" /><Setter Property="BorderBrush" Value="#DEE5E1" /><Setter Property="Background" Value="White" /></Style>
+    <Style Selector="CalendarDatePicker"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="MinHeight" Value="42" /></Style>
+    <Style Selector="CalendarDatePicker /template/ TextBox"><Setter Property="IsReadOnly" Value="True" /></Style>
+    <Style Selector="Border.card"><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="#E4EAE6" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="ListBoxItem"><Setter Property="Padding" Value="14,15" /><Setter Property="Margin" Value="0,0,0,3" /><Setter Property="CornerRadius" Value="8" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="#EAF4F0" /></Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="#F1F6F3" /></Style>
+  </Application.Styles>
+</Application>
